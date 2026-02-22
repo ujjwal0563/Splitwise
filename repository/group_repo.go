@@ -35,7 +35,7 @@ func (r *GroupRepo) RemoveMember(groupID, userID primitive.ObjectID) error {
 	_, err := r.col().UpdateOne(context.Background(), bson.M{"_id": groupID}, bson.M{"$pull": bson.M{"members": userID}})
 	return err
 }
-func (r *GroupRepo) DeleteGroup(id, userID primitive.ObjectID) error {
+func (r *GroupRepo) DeleteGroup(id primitive.ObjectID) error {
 	_, err := r.col().DeleteOne(context.Background(), bson.M{"_id": id})
 	return err
 }
