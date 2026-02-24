@@ -48,6 +48,11 @@ func SetupRouter() http.Handler {
 	// Public Routes (No Token Needed)
 	r.HandleFunc("/api/users/register", userHandler.Register).Methods("POST")
 	r.HandleFunc("/api/users/login",    userHandler.Login).Methods("POST")
+	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    w.Write([]byte(`{"status": "healthy", "message": "Server is running!"}`))
+}).Methods("GET")
 
 	// Protected Routes (Token Required)
 	protected := r.PathPrefix("/api").Subrouter()
