@@ -8,6 +8,8 @@ import (
     "splitwise/models"
     "splitwise/services"
     "splitwise/utils"
+
+    "github.com/gorilla/mux"
 )
 
 type GroupHandler struct {
@@ -38,7 +40,7 @@ func (h *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GroupHandler) GetGroup(w http.ResponseWriter, r *http.Request) {
-    groupID := r.PathValue("id")
+    groupID := mux.Vars(r)["id"]
 
     group, err := h.Service.GetGroup(groupID)
     if err != nil {
@@ -51,7 +53,7 @@ func (h *GroupHandler) GetGroup(w http.ResponseWriter, r *http.Request) {
 
 
 func (h *GroupHandler) DeleteGroup(w http.ResponseWriter, r *http.Request) {
-    groupID := r.PathValue("id")
+    groupID := mux.Vars(r)["id"]
 
     if err := h.Service.DeleteGroup(groupID); err != nil {
         utils.Error(w, http.StatusInternalServerError, err.Error())
@@ -62,7 +64,7 @@ func (h *GroupHandler) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GroupHandler) AddMember(w http.ResponseWriter, r *http.Request) {
-    groupID := r.PathValue("id")
+    groupID := mux.Vars(r)["id"]
 
     var req models.AddMemberRequest
     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -79,8 +81,8 @@ func (h *GroupHandler) AddMember(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GroupHandler) RemoveMember(w http.ResponseWriter, r *http.Request) {
-    groupID := r.PathValue("id")
-    userID  := r.PathValue("uid")
+    groupID := mux.Vars(r)["id"]
+    userID  := mux.Vars(r)["uid"]
 
     if err := h.Service.RemoveMember(groupID, userID); err != nil {
         utils.Error(w, http.StatusInternalServerError, err.Error())

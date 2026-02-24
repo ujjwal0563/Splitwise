@@ -7,6 +7,8 @@ import (
     "splitwise/models"
     "splitwise/services"
     "splitwise/utils"
+
+    "github.com/gorilla/mux"
 )
 
 type ExpenseHandler struct {
@@ -14,7 +16,7 @@ type ExpenseHandler struct {
 }
 
 func (h *ExpenseHandler) AddExpense(w http.ResponseWriter, r *http.Request) {
-    groupID := r.PathValue("id")
+    groupID := mux.Vars(r)["id"]
 
     var req models.AddExpenseRequest
     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -45,7 +47,7 @@ func (h *ExpenseHandler) AddExpense(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ExpenseHandler) GetExpenses(w http.ResponseWriter, r *http.Request) {
-    groupID := r.PathValue("id")
+    groupID := mux.Vars(r)["id"]
 
     expenses, err := h.Service.GetExpenses(groupID)
     if err != nil {
@@ -57,7 +59,7 @@ func (h *ExpenseHandler) GetExpenses(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ExpenseHandler) DeleteExpense(w http.ResponseWriter, r *http.Request) {
-    expenseID := r.PathValue("id")
+    expenseID := mux.Vars(r)["id"]
 
     if err := h.Service.DeleteExpense(expenseID); err != nil {
         utils.Error(w, http.StatusInternalServerError, err.Error())
