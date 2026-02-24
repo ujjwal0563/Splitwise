@@ -10,6 +10,7 @@ import (
 )
 type BalanceService struct {
 	ExpenseRepo *repository.ExpenseRepo
+	 GroupRepo   *repository.GroupRepo   
 }
 func (s *BalanceService) GetGroupBalances(groupID string) ([]models.BalanceDetail, error) {
 	gID, _ := primitive.ObjectIDFromHex(groupID)
@@ -26,6 +27,35 @@ func (s *BalanceService) GetGroupBalances(groupID string) ([]models.BalanceDetai
 	}
 	return minimizeTransactions(net), nil
 }
+func (s *BalanceService) GetUserOverallBalance(userID string) ([]models.BalanceDetail, error) {
+	uID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	groups, err := s.GroupRepo.GetGroupsByUserID(uID)
+	if err != nil {
+		return nil, err
+	}
+
+	net := make(map[primitive.ObjectID]float64)
+
+	for _, group := range groups {
+		expenses, err := s.ExpenseRepo.GetByGroup(group.ID)
+		if err != nil {
+			continue
+		}
+		for _, expense := range expenses {
+			net[expense.PaidBy] += expense.Amount
+			for _, split := range expense.Splits {
+				net[split.UserID] -= split.Amount
+			}
+		}
+	}
+
+	return minimizeTransactions(net), nil
+}
+
 func minimizeTransactions(net map[primitive.ObjectID]float64) []models.BalanceDetail {
 	type Entry struct {
 		UserID primitive.ObjectID

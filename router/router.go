@@ -22,7 +22,10 @@ func SetupRouter() http.Handler {
 	// Services
 	userSvc := &services.UserService{Repo: userRepo}
 	groupSvc := &services.GroupService{Repo: groupRepo}
-	balanceSvc := &services.BalanceService{ExpenseRepo: expenseRepo}
+	balanceSvc := &services.BalanceService{
+		ExpenseRepo: expenseRepo,
+		GroupRepo:   groupRepo,
+	}
 	expenseSvc := &services.ExpenseService{
 		Repo:      expenseRepo,
 		GroupRepo: groupRepo,
@@ -51,30 +54,31 @@ func SetupRouter() http.Handler {
 	protected.Use(middleware.AuthMiddleware)
 
 	// User Routes
-	protected.HandleFunc("/users/profile", userHandler.GetProfile).Methods("GET")
-	protected.HandleFunc("/users/profile", userHandler.UpdateProfile).Methods("PUT")
+	protected.HandleFunc("/users/profile",     userHandler.GetProfile).Methods("GET")
+	protected.HandleFunc("/users/profile",     userHandler.UpdateProfile).Methods("PUT")
 	protected.HandleFunc("/users/settlements", settlementHandler.GetUserSettlements).Methods("GET")
+	protected.HandleFunc("/users/balances",    balanceHandler.GetUserBalance).Methods("GET")
 
 	// Group Routes
-	protected.HandleFunc("/groups",                      groupHandler.CreateGroup).Methods("POST")
-	protected.HandleFunc("/groups/{id}",                 groupHandler.GetGroup).Methods("GET")
-	protected.HandleFunc("/groups/{id}",                 groupHandler.DeleteGroup).Methods("DELETE")
-	protected.HandleFunc("/groups/{id}/members",         groupHandler.AddMember).Methods("POST")
-	protected.HandleFunc("/groups/{id}/members/{uid}",   groupHandler.RemoveMember).Methods("DELETE")
+	protected.HandleFunc("/groups",                    groupHandler.CreateGroup).Methods("POST")
+	protected.HandleFunc("/groups/{id}",               groupHandler.GetGroup).Methods("GET")
+	protected.HandleFunc("/groups/{id}",               groupHandler.DeleteGroup).Methods("DELETE")
+	protected.HandleFunc("/groups/{id}/members",       groupHandler.AddMember).Methods("POST")
+	protected.HandleFunc("/groups/{id}/members/{uid}", groupHandler.RemoveMember).Methods("DELETE")
 
 	// Expense Routes
-	protected.HandleFunc("/groups/{id}/expenses",        expenseHandler.AddExpense).Methods("POST")
-	protected.HandleFunc("/groups/{id}/expenses",        expenseHandler.GetExpenses).Methods("GET")
-	protected.HandleFunc("/expenses/{id}",               expenseHandler.DeleteExpense).Methods("DELETE")
+	protected.HandleFunc("/groups/{id}/expenses", expenseHandler.AddExpense).Methods("POST")
+	protected.HandleFunc("/groups/{id}/expenses", expenseHandler.GetExpenses).Methods("GET")
+	protected.HandleFunc("/expenses/{id}",        expenseHandler.DeleteExpense).Methods("DELETE")
 
 	// Balance Routes
-	protected.HandleFunc("/groups/{id}/balances",        balanceHandler.GetBalances).Methods("GET")
+	protected.HandleFunc("/groups/{id}/balances", balanceHandler.GetBalances).Methods("GET")
 
 	// Settlement Routes
-	protected.HandleFunc("/groups/{id}/settle",          settlementHandler.Settle).Methods("POST")
-	protected.HandleFunc("/groups/{id}/settlements",     settlementHandler.GetGroupSettlements).Methods("GET")
-	protected.HandleFunc("/settlements/{id}",            settlementHandler.DeleteSettlement).Methods("DELETE")
+	protected.HandleFunc("/groups/{id}/settle",      settlementHandler.Settle).Methods("POST")
+	protected.HandleFunc("/groups/{id}/settlements", settlementHandler.GetGroupSettlements).Methods("GET")
+	protected.HandleFunc("/settlements/{id}",        settlementHandler.DeleteSettlement).Methods("DELETE")
 
-	// Logger Middleware 
+	// Logger Middleware on everything
 	return middleware.LoggerMiddleware(r)
 }
