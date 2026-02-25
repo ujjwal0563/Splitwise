@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: splitwise-api
+    runtime: go
+    rootDir: ./backend
+    buildCommand: go build -o main .
+    startCommand: ./main
+    plan: free
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: MONGO_DB
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: PORT
+        value: 8080

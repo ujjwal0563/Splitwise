@@ -17,5 +17,5 @@ func main() {
 		port = "8080"
 	}
 	log.Println("Server starting on port", port)
-	log.Fatal(http.ListenAndServe(":"+port, r))
+	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, r))
 }

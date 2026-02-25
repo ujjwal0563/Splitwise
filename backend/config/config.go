@@ -1,4 +1,5 @@
 package config
+
 import (
 	"context"
 	"log"
@@ -9,13 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-  
+
 var DB *mongo.Database
+
 func Connect() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	_ = godotenv.Load() // optional: .env file not required when env vars are set directly (e.g. on Render)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGO_URI")))
@@ -23,7 +22,7 @@ func Connect() {
 		log.Fatal("MongoDB connection error:", err)
 	}
 	err = client.Ping(ctx, nil)
-     if err != nil {
+	if err != nil {
 		log.Fatal("MongoDB ping error:", err)
 	}
 	DB = client.Database(os.Getenv("MONGO_DB"))

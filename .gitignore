@@ -1,0 +1,10 @@
+# Environment variables
+.env
+
+# Go binary
+backend/main
+*.exe
+
+# OS files
+.DS_Store
+Thumbs.db

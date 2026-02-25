@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"math"
 
 	"splitwise/models"
@@ -8,12 +9,17 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
 type BalanceService struct {
 	ExpenseRepo *repository.ExpenseRepo
-	 GroupRepo   *repository.GroupRepo   
+	GroupRepo   *repository.GroupRepo
 }
+
 func (s *BalanceService) GetGroupBalances(groupID string) ([]models.BalanceDetail, error) {
-	gID, _ := primitive.ObjectIDFromHex(groupID)
+	gID, err := primitive.ObjectIDFromHex(groupID)
+	if err != nil {
+		return nil, errors.New("invalid group id")
+	}
 	expenses, err := s.ExpenseRepo.GetByGroup(gID)
 	if err != nil {
 		return nil, err
@@ -79,9 +85,9 @@ func minimizeTransactions(net map[primitive.ObjectID]float64) []models.BalanceDe
 		amount := math.Min(debtors[i].Amount, creditors[j].Amount)
 
 		result = append(result, models.BalanceDetail{
-			FromUserID : debtors[i].UserID.Hex(),
-			TOUser :   creditors[j].UserID.Hex(),
-			Amount :   math.Round(amount*100) / 100,
+			FromUserID: debtors[i].UserID.Hex(),
+			TOUser:     creditors[j].UserID.Hex(),
+			Amount:     math.Round(amount*100) / 100,
 		})
 
 		debtors[i].Amount -= amount
