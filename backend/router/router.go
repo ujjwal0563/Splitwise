@@ -65,6 +65,7 @@ func SetupRouter() http.Handler {
 	protected.HandleFunc("/users/balances", balanceHandler.GetUserBalance).Methods("GET")
 
 	// Group Routes
+	protected.HandleFunc("/groups", groupHandler.GetUserGroups).Methods("GET")
 	protected.HandleFunc("/groups", groupHandler.CreateGroup).Methods("POST")
 	protected.HandleFunc("/groups/{id}", groupHandler.GetGroup).Methods("GET")
 	protected.HandleFunc("/groups/{id}", groupHandler.DeleteGroup).Methods("DELETE")

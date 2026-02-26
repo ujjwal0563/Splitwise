@@ -68,3 +68,11 @@ func (s *GroupService) DeleteGroup(groupID string) error {
 	}
 	return s.Repo.DeleteGroup(objID)
 }
+
+func (s *GroupService) GetGroupsByUserID(userID string) ([]models.Group, error) {
+	objID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, errors.New("invalid user id")
+	}
+	return s.Repo.GetGroupsByUserID(objID)
+}

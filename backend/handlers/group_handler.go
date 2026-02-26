@@ -16,6 +16,22 @@ type GroupHandler struct {
 	Service *services.GroupService
 }
 
+func (h *GroupHandler) GetUserGroups(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.GetUserID(r)
+
+	groups, err := h.Service.GetGroupsByUserID(userID)
+	if err != nil {
+		utils.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if groups == nil {
+		groups = []models.Group{}
+	}
+
+	utils.Success(w, groups)
+}
+
 func (h *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.GetUserID(r)
 
