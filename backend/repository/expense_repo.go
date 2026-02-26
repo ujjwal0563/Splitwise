@@ -1,14 +1,18 @@
 package repository
+
 import (
 	"context"
-	"time"
 	"splitwise/config"
 	"splitwise/models"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-type ExpenseRepo struct {}
+
+type ExpenseRepo struct{}
+
 func (r *ExpenseRepo) col() *mongo.Collection {
 	return config.GetCollection("expenses")
 }
@@ -34,7 +38,11 @@ func (r *ExpenseRepo) DeleteExpense(id primitive.ObjectID) error {
 	_, err := r.col().DeleteOne(context.Background(), bson.M{"_id": id})
 	return err
 }
- func (r *ExpenseRepo) GetByID(id primitive.ObjectID) (*models.Expense, error) {
+func (r *ExpenseRepo) DeleteByGroupID(groupID primitive.ObjectID) error {
+	_, err := r.col().DeleteMany(context.Background(), bson.M{"group_id": groupID})
+	return err
+}
+func (r *ExpenseRepo) GetByID(id primitive.ObjectID) (*models.Expense, error) {
 	var expense models.Expense
 	err := r.col().FindOne(context.Background(), bson.M{"_id": id}).Decode(&expense)
 	if err != nil {

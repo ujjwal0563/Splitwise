@@ -21,7 +21,12 @@ func SetupRouter() http.Handler {
 
 	// Services
 	userSvc := &services.UserService{Repo: userRepo}
-	groupSvc := &services.GroupService{Repo: groupRepo}
+	groupSvc := &services.GroupService{
+		Repo:           groupRepo,
+		UserRepo:       userRepo,
+		ExpenseRepo:    expenseRepo,
+		SettlementRepo: settlementRepo,
+	}
 	balanceSvc := &services.BalanceService{
 		ExpenseRepo: expenseRepo,
 		GroupRepo:   groupRepo,
@@ -68,6 +73,7 @@ func SetupRouter() http.Handler {
 	protected.HandleFunc("/groups", groupHandler.GetUserGroups).Methods("GET")
 	protected.HandleFunc("/groups", groupHandler.CreateGroup).Methods("POST")
 	protected.HandleFunc("/groups/{id}", groupHandler.GetGroup).Methods("GET")
+	protected.HandleFunc("/groups/{id}", groupHandler.UpdateGroup).Methods("PUT")
 	protected.HandleFunc("/groups/{id}", groupHandler.DeleteGroup).Methods("DELETE")
 	protected.HandleFunc("/groups/{id}/members", groupHandler.AddMember).Methods("POST")
 	protected.HandleFunc("/groups/{id}/members/{uid}", groupHandler.RemoveMember).Methods("DELETE")
