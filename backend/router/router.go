@@ -18,6 +18,7 @@ func SetupRouter() http.Handler {
 	groupRepo := &repository.GroupRepo{}
 	expenseRepo := &repository.ExpenseRepo{}
 	settlementRepo := &repository.SettlementRepo{}
+	friendRepo := &repository.FriendRepo{}
 
 	// Services
 	userSvc := &services.UserService{Repo: userRepo}
@@ -39,6 +40,10 @@ func SetupRouter() http.Handler {
 		Repo:       settlementRepo,
 		BalanceSvc: balanceSvc,
 	}
+	friendSvc := &services.FriendService{
+		Repo:     friendRepo,
+		UserRepo: userRepo,
+	}
 
 	// Handlers
 	userHandler := &handlers.UserHandler{Service: userSvc}
@@ -46,6 +51,7 @@ func SetupRouter() http.Handler {
 	expenseHandler := &handlers.ExpenseHandler{Service: expenseSvc}
 	balanceHandler := &handlers.BalanceHandler{Service: balanceSvc}
 	settlementHandler := &handlers.SettlementHandler{Service: settlementSvc}
+	friendHandler := &handlers.FriendHandler{Service: friendSvc}
 
 	// Router
 	r := mux.NewRouter()
@@ -90,6 +96,15 @@ func SetupRouter() http.Handler {
 	protected.HandleFunc("/groups/{id}/settle", settlementHandler.Settle).Methods("POST")
 	protected.HandleFunc("/groups/{id}/settlements", settlementHandler.GetGroupSettlements).Methods("GET")
 	protected.HandleFunc("/settlements/{id}", settlementHandler.DeleteSettlement).Methods("DELETE")
+
+	// Friend Routes
+	protected.HandleFunc("/friends", friendHandler.GetFriends).Methods("GET")
+	protected.HandleFunc("/friends/request", friendHandler.SendRequest).Methods("POST")
+	protected.HandleFunc("/friends/pending", friendHandler.GetPendingRequests).Methods("GET")
+	protected.HandleFunc("/friends/sent", friendHandler.GetSentRequests).Methods("GET")
+	protected.HandleFunc("/friends/{id}/accept", friendHandler.AcceptRequest).Methods("PUT")
+	protected.HandleFunc("/friends/{id}/reject", friendHandler.RejectRequest).Methods("PUT")
+	protected.HandleFunc("/friends/{id}", friendHandler.RemoveFriend).Methods("DELETE")
 
 	// Apply middleware: CORS first, then Logger
 	return middleware.CORSMiddleware(middleware.LoggerMiddleware(r))
