@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+
+  /* Premium Palette */
+  --color-brand-primary: #10b981;
+  --color-brand-secondary: #059669;
+  --color-background: #f8fafc;
+  --color-glass-border: rgba(255, 255, 255, 0.4);
+  --color-glass-bg: rgba(255, 255, 255, 0.7);
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-background);
+    background-image:
+      radial-gradient(at 0% 0%, hsla(161, 68%, 45%, 0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(220, 90%, 50%, 0.04) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(280, 80%, 50%, 0.04) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(161, 68%, 45%, 0.08) 0px, transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: #0f172a;
+    position: relative;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Subtle noise texture */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.012;
+    z-index: -1;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23a)'/%3E%3C/svg%3E");
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+}
+
+/* ─── Utility Classes ─── */
+@utility glass {
+  background-color: var(--color-glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--color-glass-border);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.06);
+}
+
+@utility glass-morphism {
+  @apply glass rounded-2xl transition-all duration-300;
+}
+
+@utility premium-card {
+  @apply glass-morphism;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+@utility premium-card-hover {
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.09);
+  transform: translateY(-2px);
+}
+
+@utility flex-center {
+  @apply flex items-center justify-center;
+}
+
+@utility text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500;
+}
+
+/* ─── Scrollbar Styling ─── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ─── Animate In Utilities (simple fallback) ─── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoom-in-95 {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  animation-name: fade-in;
+}
+
+.zoom-in-95 {
+  animation-name: zoom-in-95;
+}
+
+.duration-700 {
+  animation-duration: 700ms;
+}

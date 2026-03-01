@@ -69,7 +69,7 @@ func SetupRouter() http.Handler {
 	protected := r.PathPrefix("/api").Subrouter()
 	protected.Use(middleware.AuthMiddleware)
 
-	// User Routes
+	protected.HandleFunc("/users", userHandler.GetAll).Methods("GET")
 	protected.HandleFunc("/users/profile", userHandler.GetProfile).Methods("GET")
 	protected.HandleFunc("/users/profile", userHandler.UpdateProfile).Methods("PUT")
 	protected.HandleFunc("/users/settlements", settlementHandler.GetUserSettlements).Methods("GET")

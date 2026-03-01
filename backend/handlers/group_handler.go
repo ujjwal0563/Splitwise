@@ -149,3 +149,13 @@ func (h *GroupHandler) RemoveMember(w http.ResponseWriter, r *http.Request) {
 
 	utils.Success(w, map[string]string{"message": "member removed"})
 }
+
+func (h *GroupHandler) GetUserGroups(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.GetUserID(r)
+	groups, err := h.Service.GetUserGroups(userID)
+	if err != nil {
+		utils.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.Success(w, groups)
+}
