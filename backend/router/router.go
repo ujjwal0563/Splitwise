@@ -58,13 +58,14 @@ func SetupRouter() http.Handler {
 	protected := r.PathPrefix("/api").Subrouter()
 	protected.Use(middleware.AuthMiddleware)
 
-	// User Routes
+	protected.HandleFunc("/users", userHandler.GetAll).Methods("GET")
 	protected.HandleFunc("/users/profile", userHandler.GetProfile).Methods("GET")
 	protected.HandleFunc("/users/profile", userHandler.UpdateProfile).Methods("PUT")
 	protected.HandleFunc("/users/settlements", settlementHandler.GetUserSettlements).Methods("GET")
 	protected.HandleFunc("/users/balances", balanceHandler.GetUserBalance).Methods("GET")
 
 	// Group Routes
+	protected.HandleFunc("/groups", groupHandler.GetUserGroups).Methods("GET")
 	protected.HandleFunc("/groups", groupHandler.CreateGroup).Methods("POST")
 	protected.HandleFunc("/groups/{id}", groupHandler.GetGroup).Methods("GET")
 	protected.HandleFunc("/groups/{id}", groupHandler.DeleteGroup).Methods("DELETE")

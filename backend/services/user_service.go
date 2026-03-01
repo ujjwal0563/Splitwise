@@ -64,3 +64,15 @@ func (s *UserService) UpdateProfile(userID string, req models.UpdateProfileReque
 	}
 	return s.Repo.UpdateUser(objID, req.Name)
 }
+
+func (s *UserService) GetAll() ([]models.User, error) {
+	users, err := s.Repo.GetAll()
+	if err != nil {
+		return nil, errors.New("failed to fetch users")
+	}
+	// Sanitize passwords from the response
+	for i := range users {
+		users[i].Password = ""
+	}
+	return users, nil
+}
