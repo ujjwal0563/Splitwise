@@ -19,3 +19,6 @@ type CreateGroupRequest struct {
 type AddMemberRequest struct {
 	UserID string `json:"user_id"`
 }
+type UpdateGroupRequest struct {
+	Name string `json:"name"`
+}
