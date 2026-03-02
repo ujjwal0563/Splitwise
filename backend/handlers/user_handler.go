@@ -71,3 +71,41 @@ func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.Success(w, "profile updated")
 }
+
+func (h *UserHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
+	var req models.ForgotPasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		utils.Error(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if req.Email == "" {
+		utils.Error(w, http.StatusBadRequest, "email is required")
+		return
+	}
+	token, err := h.Service.ForgotPassword(req)
+	if err != nil {
+		utils.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.Success(w, map[string]string{
+		"message": "password reset token generated",
+		"token":   token,
+	})
+}
+
+func (h *UserHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
+	var req models.ResetPasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		utils.Error(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if req.Token == "" || req.NewPassword == "" {
+		utils.Error(w, http.StatusBadRequest, "token and new_password are required")
+		return
+	}
+	if err := h.Service.ResetPassword(req); err != nil {
+		utils.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.Success(w, map[string]string{"message": "password reset successful"})
+}
