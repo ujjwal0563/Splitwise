@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"math"
 
 	"splitwise/models"
 	"splitwise/repository"
@@ -29,6 +30,19 @@ func (s *ExpenseService) AddExpense(groupID string, req models.AddExpenseRequest
 		return nil, errors.New("group not found")
 	}
 
+	// Validate payer is a group member
+	isMember := false
+	memberSet := make(map[primitive.ObjectID]bool)
+	for _, m := range group.Members {
+		memberSet[m] = true
+		if m == paidBy {
+			isMember = true
+		}
+	}
+	if !isMember {
+		return nil, errors.New("payer must be a member of the group")
+	}
+
 	var splits []models.ExpenseSplit
 
 	if req.SplitsType == "equal" {
@@ -40,15 +54,24 @@ func (s *ExpenseService) AddExpense(groupID string, req models.AddExpenseRequest
 			})
 		}
 	} else {
+		var splitTotal float64
 		for _, sp := range req.Splits {
 			uid, err := primitive.ObjectIDFromHex(sp.UserID)
 			if err != nil {
 				return nil, errors.New("invalid split user id")
 			}
+			if !memberSet[uid] {
+				return nil, errors.New("split user must be a member of the group")
+			}
 			splits = append(splits, models.ExpenseSplit{
 				UserID: uid,
 				Amount: sp.Amount,
 			})
+			splitTotal += sp.Amount
+		}
+		// Validate splits sum to expense amount (allow 0.01 tolerance for rounding)
+		if math.Abs(splitTotal-req.Amount) > 0.01 {
+			return nil, errors.New("splits must add up to the expense amount")
 		}
 	}
 
