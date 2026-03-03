@@ -61,6 +61,21 @@ func (r *FriendRepo) UpdateStatus(id primitive.ObjectID, status string) error {
 	return err
 }
 
+// UpdateForResend updates requester, addressee, and status when re-sending a rejected request.
+func (r *FriendRepo) UpdateForResend(id, requester, addressee primitive.ObjectID) error {
+	_, err := r.col().UpdateOne(
+		context.Background(),
+		bson.M{"_id": id},
+		bson.M{"$set": bson.M{
+			"requester":  requester,
+			"addressee":  addressee,
+			"status":     "pending",
+			"updated_at": time.Now(),
+		}},
+	)
+	return err
+}
+
 // Delete removes a friendship record.
 func (r *FriendRepo) Delete(id primitive.ObjectID) error {
 	_, err := r.col().DeleteOne(context.Background(), bson.M{"_id": id})
