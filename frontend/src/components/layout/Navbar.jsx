@@ -1,14 +1,16 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { CreditCard, LayoutDashboard, Users, LogOut, UserCheck, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { CreditCard, LayoutDashboard, Users, LogOut, UserCheck, User, Menu, X } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../utils/cn';
 
 export const Navbar = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const navLinks = [
         { name: 'Dashboard', path: '/', icon: LayoutDashboard },
@@ -21,7 +23,7 @@ export const Navbar = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/landing';
+        navigate('/landing');
     };
 
     return (
@@ -78,14 +80,68 @@ export const Navbar = () => {
                     <Button
                         variant="secondary"
                         size="sm"
-                        className="rounded-xl border-rose-100/50 text-rose-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-all font-bold"
+                        className="hidden md:inline-flex rounded-xl border-rose-100/50 text-rose-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-all font-bold"
                         onClick={handleLogout}
                     >
                         <LogOut className="w-4 h-4 mr-2" />
                         Logout
                     </Button>
+
+                    {/* Mobile hamburger */}
+                    <button
+                        className="md:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    >
+                        {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                    </button>
                 </div>
             </nav>
+
+            {/* Mobile dropdown menu */}
+            <AnimatePresence>
+                {mobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="md:hidden w-full max-w-7xl mt-2 glass rounded-2xl p-4 pointer-events-auto shadow-lg border border-white/40 space-y-2"
+                    >
+                        {navLinks.map((link) => {
+                            const isActive = location.pathname === link.path || (link.path !== '/' && location.pathname.startsWith(link.path));
+                            return (
+                                <Link
+                                    key={link.path}
+                                    to={link.path}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className={cn(
+                                        "flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-bold transition-all",
+                                        isActive ? "bg-white text-emerald-600 shadow-sm" : "text-slate-600 hover:bg-white/50"
+                                    )}
+                                >
+                                    <link.icon className="w-4 h-4" />
+                                    <span>{link.name}</span>
+                                </Link>
+                            );
+                        })}
+                        <Link
+                            to="/profile"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-600 hover:bg-white/50 transition-all"
+                        >
+                            <User className="w-4 h-4" />
+                            <span>Profile</span>
+                        </Link>
+                        <button
+                            onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
+                            className="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-bold text-rose-600 hover:bg-rose-50 transition-all w-full"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            <span>Logout</span>
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.header>
     );
 };

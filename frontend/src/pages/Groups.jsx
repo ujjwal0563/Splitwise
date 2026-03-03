@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -9,11 +10,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../utils/cn';
 
 const Groups = () => {
+    const navigate = useNavigate();
     const [groups, setGroups] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newGroupName, setNewGroupName] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const [createError, setCreateError] = useState('');
 
     useEffect(() => {
         fetchGroups();
@@ -32,6 +35,7 @@ const Groups = () => {
 
     const handleCreateGroup = async (e) => {
         e.preventDefault();
+        setCreateError('');
         try {
             await api.post('/groups', {
                 name: newGroupName,
@@ -40,7 +44,7 @@ const Groups = () => {
             setIsModalOpen(false);
             fetchGroups();
         } catch (err) {
-            console.error('Failed to create group', err);
+            setCreateError(err.response?.data?.error || 'Failed to create group');
         }
     };
 
@@ -113,7 +117,7 @@ const Groups = () => {
                                     variants={itemVariants}
                                     layout
                                     className="group cursor-pointer"
-                                    onClick={() => window.location.href = `/groups/${group.id}`}
+                                    onClick={() => navigate(`/groups/${group.id}`)}
                                 >
                                     <Card className="h-full border-slate-100/50 hover:border-emerald-500/30 transition-all duration-500 overflow-hidden relative">
                                         <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -193,6 +197,11 @@ const Groups = () => {
                                 </CardHeader>
                                 <CardContent>
                                     <form onSubmit={handleCreateGroup} className="space-y-6">
+                                        {createError && (
+                                            <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm font-medium">
+                                                {createError}
+                                            </div>
+                                        )}
                                         <Input
                                             label="Group Name"
                                             placeholder="e.g., Summer Trip 2024"

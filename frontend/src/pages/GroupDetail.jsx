@@ -128,6 +128,7 @@ const GroupDetail = () => {
             fetchData();
         } catch (err) {
             console.error('Failed to delete expense:', err);
+            alert(err.response?.data?.error || 'Failed to delete expense');
         }
     };
 
@@ -137,6 +138,7 @@ const GroupDetail = () => {
             fetchData();
         } catch (err) {
             console.error('Failed to add member:', err);
+            alert(err.response?.data?.error || 'Failed to add member');
         }
     };
 
@@ -147,6 +149,7 @@ const GroupDetail = () => {
             fetchData();
         } catch (err) {
             console.error('Failed to remove member:', err);
+            alert(err.response?.data?.error || 'Failed to remove member');
         }
     };
 
@@ -157,6 +160,7 @@ const GroupDetail = () => {
             navigate('/groups');
         } catch (err) {
             console.error('Failed to delete group:', err);
+            alert(err.response?.data?.error || 'Failed to delete group');
         }
     };
 
@@ -190,6 +194,7 @@ const GroupDetail = () => {
             fetchData();
         } catch (err) {
             console.error('Failed to delete settlement:', err);
+            alert(err.response?.data?.error || 'Failed to delete settlement');
         }
     };
 
