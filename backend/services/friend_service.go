@@ -46,13 +46,13 @@ func (s *FriendService) SendRequest(userID string, req models.FriendRequest) (*m
 		case "pending":
 			return nil, errors.New("a friend request already exists between you and this user")
 		case "rejected":
-			// Allow re-sending by updating the old record
+			// Allow re-sending by updating the old record with correct direction
+			if err := s.Repo.UpdateForResend(existing.ID, requesterID, addresseeID); err != nil {
+				return nil, err
+			}
 			existing.Requester = requesterID
 			existing.Addressee = addresseeID
 			existing.Status = "pending"
-			if err := s.Repo.UpdateStatus(existing.ID, "pending"); err != nil {
-				return nil, err
-			}
 			return existing, nil
 		}
 	}
