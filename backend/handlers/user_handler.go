@@ -20,6 +20,14 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		utils.Error(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
+	if req.Name == "" || req.Email == "" || req.Password == "" {
+		utils.Error(w, http.StatusBadRequest, "name, email and password are required")
+		return
+	}
+	if len(req.Password) < 6 {
+		utils.Error(w, http.StatusBadRequest, "password must be at least 6 characters")
+		return
+	}
 	user, err := h.Service.Register(req)
 	if err != nil {
 		utils.Error(w, http.StatusBadRequest, err.Error())
