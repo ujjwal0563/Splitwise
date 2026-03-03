@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"math"
+	"sort"
 
 	"splitwise/models"
 	"splitwise/repository"
@@ -101,6 +102,10 @@ func minimizeTransactions(net map[primitive.ObjectID]float64) []models.BalanceDe
 		}
 	}
 
+	// Sort for deterministic results (largest amounts first)
+	sort.Slice(creditors, func(i, j int) bool { return creditors[i].Amount > creditors[j].Amount })
+	sort.Slice(debtors, func(i, j int) bool { return debtors[i].Amount > debtors[j].Amount })
+
 	var result []models.BalanceDetail
 	i, j := 0, 0
 	for i < len(debtors) && j < len(creditors) {
@@ -108,7 +113,7 @@ func minimizeTransactions(net map[primitive.ObjectID]float64) []models.BalanceDe
 
 		result = append(result, models.BalanceDetail{
 			FromUserID: debtors[i].UserID.Hex(),
-			TOUser:     creditors[j].UserID.Hex(),
+			ToUser:     creditors[j].UserID.Hex(),
 			Amount:     math.Round(amount*100) / 100,
 		})
 
