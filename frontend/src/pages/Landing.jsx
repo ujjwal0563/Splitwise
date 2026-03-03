@@ -249,7 +249,7 @@ export default function Landing() {
                                 <div className="md:col-span-2 bg-slate-900 rounded-2xl p-6 text-white relative overflow-hidden">
                                     <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-500/20 rounded-full blur-3xl translate-x-10 -translate-y-10" />
                                     <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-2">Net Balance</p>
-                                    <p className="text-4xl font-black">+$247.50</p>
+                                    <p className="text-4xl font-black">+247.50</p>
                                     <div className="mt-4 inline-flex items-center text-xs font-bold bg-white/10 px-3 py-1.5 rounded-xl">
                                         <TrendingUp className="w-3 h-3 mr-1.5 text-emerald-400" />
                                         3 people owe you
@@ -260,11 +260,11 @@ export default function Landing() {
                                 <div className="space-y-3">
                                     <div className="bg-emerald-50 border border-emerald-100/80 rounded-2xl p-4">
                                         <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1">You're owed</p>
-                                        <p className="text-2xl font-black text-emerald-700">$312.00</p>
+                                        <p className="text-2xl font-black text-emerald-700">312.00</p>
                                     </div>
                                     <div className="bg-rose-50 border border-rose-100/80 rounded-2xl p-4">
                                         <p className="text-xs font-bold text-rose-600 uppercase tracking-widest mb-1">You owe</p>
-                                        <p className="text-2xl font-black text-rose-700">$64.50</p>
+                                        <p className="text-2xl font-black text-rose-700">64.50</p>
                                     </div>
                                 </div>
                             </div>
@@ -273,8 +273,8 @@ export default function Landing() {
                             <div className="space-y-3">
                                 {[
                                     { name: 'Goa Trip — Hotels', amount: '₹8,500', person: 'Priya paid', bg: 'bg-emerald-50', icon: 'text-emerald-500' },
-                                    { name: 'Weekend Groceries', amount: '$42.30', person: 'You paid', bg: 'bg-blue-50', icon: 'text-blue-500' },
-                                    { name: 'Movie Night', amount: '$28.00', person: 'Alex paid', bg: 'bg-violet-50', icon: 'text-violet-500' },
+                                    { name: 'Weekend Groceries', amount: '42.30', person: 'You paid', bg: 'bg-blue-50', icon: 'text-blue-500' },
+                                    { name: 'Movie Night', amount: '28.00', person: 'Alex paid', bg: 'bg-violet-50', icon: 'text-violet-500' },
                                 ].map((exp, i) => (
                                     <div key={i} className="flex items-center justify-between bg-white rounded-xl px-5 py-4 border border-slate-100 shadow-sm">
                                         <div className="flex items-center space-x-4">
@@ -517,7 +517,7 @@ export default function Landing() {
                         <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl" />
                         <div className="relative">
                             <div className="inline-block bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-6">Free Forever</div>
-                            <div className="text-6xl font-black mb-2">$0<span className="text-2xl text-slate-400 font-medium">/mo</span></div>
+                            <div className="text-6xl font-black mb-2">0<span className="text-2xl text-slate-400 font-medium">/mo</span></div>
                             <p className="text-slate-400 mb-10">Everything you need to split expenses with friends.</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
                                 {[

@@ -486,7 +486,7 @@ const GroupDetail = () => {
                         onChange={e => setExpenseData({ ...expenseData, description: e.target.value })}
                     />
                     <Input
-                        label="Amount ($)"
+                        label="Amount"
                         type="number"
                         step="0.01"
                         min="0.01"
@@ -649,7 +649,7 @@ const GroupDetail = () => {
                     </div>
 
                     <Input
-                        label="Amount ($)"
+                        label="Amount"
                         type="number"
                         step="0.01"
                         min="0.01"
