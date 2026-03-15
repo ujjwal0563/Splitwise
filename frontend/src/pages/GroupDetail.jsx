@@ -41,6 +41,9 @@ const GroupDetail = () => {
     const [settlePaidBy, setSettlePaidBy] = useState('');
     const [settlePaidTo, setSettlePaidTo] = useState('');
     const [settleAmount, setSettleAmount] = useState('');
+    
+    // Custom splits
+    const [customSplits, setCustomSplits] = useState({});
 
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
     const currentUserId = currentUser.id || currentUser._id || '';
@@ -105,15 +108,42 @@ const GroupDetail = () => {
             alert('Please select who paid.');
             return;
         }
+        if (!expenseData.amount || parseFloat(expenseData.amount) <= 0) {
+            alert('Please enter a valid amount.');
+            return;
+        }
         try {
-            await api.post(`/groups/${id}/expenses`, {
+            const payload = {
                 description: expenseData.description,
                 amount: parseFloat(expenseData.amount),
                 paid_by: expenseData.paid_by,
                 splits_type: expenseData.split_type,
-            });
+            };
+            
+            // Add custom splits if not equal
+            if (expenseData.split_type === 'custom') {
+                const splits = Object.entries(customSplits)
+                    .filter(([_, amount]) => amount > 0)
+                    .map(([userId, amount]) => ({ user_id: userId, amount: parseFloat(amount) }));
+                
+                if (splits.length === 0) {
+                    alert('Please add at least one split.');
+                    return;
+                }
+                
+                const totalAmount = splits.reduce((sum, s) => sum + s.amount, 0);
+                if (Math.abs(totalAmount - parseFloat(expenseData.amount)) > 0.01) {
+                    alert(`Splits total must equal the expense amount. Current total: ${totalAmount.toFixed(2)}`);
+                    return;
+                }
+                
+                payload.splits = splits;
+            }
+            
+            await api.post(`/groups/${id}/expenses`, payload);
             setIsExpenseModalOpen(false);
             setExpenseData({ description: '', amount: '', paid_by: '', split_type: 'equal' });
+            setCustomSplits({});
             fetchData();
         } catch (err) {
             console.error('Failed to add expense:', err);
@@ -519,14 +549,102 @@ const GroupDetail = () => {
                             ))}
                         </div>
                     </div>
-                    <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-start space-x-3">
-                        <Info className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
-                        <p className="text-xs font-bold text-emerald-700 leading-relaxed">
-                            Will be split equally among all {(group.members || []).length} members
-                        </p>
+
+                    {/* Split Type Selector */}
+                    <div className="space-y-3">
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-500">How to split?</label>
+                        <div className="flex gap-3">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setExpenseData({ ...expenseData, split_type: 'equal' });
+                                    setCustomSplits({});
+                                }}
+                                className={cn(
+                                    "flex-1 px-4 py-3 rounded-2xl border-2 font-bold text-sm transition-all",
+                                    expenseData.split_type === 'equal'
+                                        ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                                        : "border-slate-100 hover:border-slate-200 bg-white text-slate-700"
+                                )}
+                            >
+                                Split Equally
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setExpenseData({ ...expenseData, split_type: 'custom' })}
+                                className={cn(
+                                    "flex-1 px-4 py-3 rounded-2xl border-2 font-bold text-sm transition-all",
+                                    expenseData.split_type === 'custom'
+                                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                                        : "border-slate-100 hover:border-slate-200 bg-white text-slate-700"
+                                )}
+                            >
+                                Custom Split
+                            </button>
+                        </div>
                     </div>
+
+                    {/* Custom Splits Configuration */}
+                    {expenseData.split_type === 'custom' && (
+                        <div className="space-y-3 p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                            <p className="text-xs font-bold text-indigo-700">Select who owes money and how much</p>
+                            <div className="space-y-2 max-h-48 overflow-y-auto">
+                                {memberObjects.map(m => (
+                                    <div key={m.id} className="flex items-center gap-3">
+                                        <input
+                                            type="checkbox"
+                                            checked={Boolean(customSplits[m.id])}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setCustomSplits({ ...customSplits, [m.id]: '' });
+                                                } else {
+                                                    const { [m.id]: _, ...rest } = customSplits;
+                                                    setCustomSplits(rest);
+                                                }
+                                            }}
+                                            className="w-5 h-5 rounded border-slate-300 text-indigo-600"
+                                        />
+                                        <span className="text-xs font-bold text-slate-700 min-w-max">{m.name}</span>
+                                        {customSplits[m.id] !== undefined && (
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                placeholder="Amount"
+                                                value={customSplits[m.id]}
+                                                onChange={(e) => setCustomSplits({ ...customSplits, [m.id]: e.target.value })}
+                                                className="flex-1 px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            {expenseData.amount && Object.values(customSplits).some(v => v) && (
+                                <div className="text-xs font-bold text-indigo-700 pt-2 border-t border-indigo-200">
+                                    Total split: ₹{(Object.values(customSplits)
+                                        .filter(v => v)
+                                        .reduce((sum, v) => sum + parseFloat(v || 0), 0)).toFixed(2)} / ₹{parseFloat(expenseData.amount || 0).toFixed(2)}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Info message */}
+                    {expenseData.split_type === 'equal' && (
+                        <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-start space-x-3">
+                            <Info className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                            <p className="text-xs font-bold text-emerald-700 leading-relaxed">
+                                Will be split equally among all {(group?.members || []).length} members
+                            </p>
+                        </div>
+                    )}
+
                     <div className="flex gap-4 pt-2">
-                        <Button type="button" variant="secondary" className="flex-1 rounded-2xl" onClick={() => setIsExpenseModalOpen(false)}>Cancel</Button>
+                        <Button type="button" variant="secondary" className="flex-1 rounded-2xl" onClick={() => {
+                            setIsExpenseModalOpen(false);
+                            setExpenseData({ description: '', amount: '', paid_by: '', split_type: 'equal' });
+                            setCustomSplits({});
+                        }}>Cancel</Button>
                         <Button type="submit" className="flex-1 rounded-2xl">Save Expense</Button>
                     </div>
                 </form>
