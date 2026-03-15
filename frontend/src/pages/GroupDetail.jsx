@@ -122,20 +122,19 @@ const GroupDetail = () => {
             
             // Add custom splits if not equal
             if (expenseData.split_type === 'custom') {
-                const splits = Object.entries(customSplits)
-                    .filter(([_, amount]) => amount > 0)
-                    .map(([userId, amount]) => ({ user_id: userId, amount: parseFloat(amount) }));
+                const selectedMembers = Object.keys(customSplits).filter(userId => customSplits[userId]);
                 
-                if (splits.length === 0) {
-                    alert('Please add at least one split.');
+                if (selectedMembers.length === 0) {
+                    alert('Please select at least one member to split with.');
                     return;
                 }
                 
-                const totalAmount = splits.reduce((sum, s) => sum + s.amount, 0);
-                if (Math.abs(totalAmount - parseFloat(expenseData.amount)) > 0.01) {
-                    alert(`Splits total must equal the expense amount. Current total: ${totalAmount.toFixed(2)}`);
-                    return;
-                }
+                // Calculate equal split among selected members
+                const sharePerPerson = parseFloat(expenseData.amount) / selectedMembers.length;
+                const splits = selectedMembers.map(userId => ({
+                    user_id: userId,
+                    amount: parseFloat(sharePerPerson.toFixed(2))
+                }));
                 
                 payload.splits = splits;
             }
@@ -587,43 +586,37 @@ const GroupDetail = () => {
                     {/* Custom Splits Configuration */}
                     {expenseData.split_type === 'custom' && (
                         <div className="space-y-3 p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
-                            <p className="text-xs font-bold text-indigo-700">Select who owes money and how much</p>
+                            <p className="text-xs font-bold text-indigo-700">Select members to split with (equal share among selected)</p>
                             <div className="space-y-2 max-h-48 overflow-y-auto">
                                 {memberObjects.map(m => (
-                                    <div key={m.id} className="flex items-center gap-3">
+                                    <label key={m.id} className="flex items-center gap-3 p-2 hover:bg-indigo-100 rounded-lg cursor-pointer transition-colors">
                                         <input
                                             type="checkbox"
                                             checked={Boolean(customSplits[m.id])}
                                             onChange={(e) => {
                                                 if (e.target.checked) {
-                                                    setCustomSplits({ ...customSplits, [m.id]: '' });
+                                                    setCustomSplits({ ...customSplits, [m.id]: true });
                                                 } else {
                                                     const { [m.id]: _, ...rest } = customSplits;
                                                     setCustomSplits(rest);
                                                 }
                                             }}
-                                            className="w-5 h-5 rounded border-slate-300 text-indigo-600"
+                                            className="w-5 h-5 rounded border-indigo-300 text-indigo-600 accent-indigo-600"
                                         />
-                                        <span className="text-xs font-bold text-slate-700 min-w-max">{m.name}</span>
-                                        {customSplits[m.id] !== undefined && (
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                placeholder="Amount"
-                                                value={customSplits[m.id]}
-                                                onChange={(e) => setCustomSplits({ ...customSplits, [m.id]: e.target.value })}
-                                                className="flex-1 px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
-                                            />
-                                        )}
-                                    </div>
+                                        <div className="flex-1 flex items-center justify-between">
+                                            <span className="text-xs font-bold text-slate-700">{m.name}</span>
+                                            {customSplits[m.id] && expenseData.amount && (
+                                                <span className="text-xs font-bold text-indigo-600">
+                                                    ₹{(parseFloat(expenseData.amount) / Object.keys(customSplits).filter(k => customSplits[k]).length).toFixed(2)}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </label>
                                 ))}
                             </div>
-                            {expenseData.amount && Object.values(customSplits).some(v => v) && (
+                            {expenseData.amount && Object.keys(customSplits).filter(k => customSplits[k]).length > 0 && (
                                 <div className="text-xs font-bold text-indigo-700 pt-2 border-t border-indigo-200">
-                                    Total split: ₹{(Object.values(customSplits)
-                                        .filter(v => v)
-                                        .reduce((sum, v) => sum + parseFloat(v || 0), 0)).toFixed(2)} / ₹{parseFloat(expenseData.amount || 0).toFixed(2)}
+                                    Split between {Object.keys(customSplits).filter(k => customSplits[k]).length} members • ₹{(parseFloat(expenseData.amount) / Object.keys(customSplits).filter(k => customSplits[k]).length).toFixed(2)} each
                                 </div>
                             )}
                         </div>
