@@ -95,7 +95,7 @@ func (h *UserHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.Success(w, map[string]string{
-		"message": "password reset token sent to your email",
+		"message": "OTP sent to your email. It will expire in 10 minutes.",
 	})
 }
 

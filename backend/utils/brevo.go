@@ -2,10 +2,12 @@ package utils
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"math/big"
 	"net/http"
 	"os"
 	"time"
@@ -41,17 +43,34 @@ func SendOTPEmailBrevo(toEmail string, otp string) error {
 	payload := brevoEmailPayload{}
 	payload.Sender.Email = fromEmail
 	payload.Sender.Name = fromName
-	payload.Subject = "Password Reset OTP"
+	payload.Subject = "Your Password Reset OTP - Splitwise"
 
 	payload.To = append(payload.To, struct {
 		Email string `json:"email"`
 	}{Email: toEmail})
 
 	payload.HTMLContent = `
-		<h2>Password Reset OTP</h2>
-		<p>Your OTP is:</p>
-		<h1>` + otp + `</h1>
-		<p>This OTP is valid for <b>5 minutes</b>.</p>
+		<html>
+		<body style="font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px;">
+			<div style="max-width: 500px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+				<h2 style="color: #333; text-align: center;">Password Reset Request</h2>
+				<p style="color: #666; text-align: center; margin-bottom: 30px;">Use this OTP to reset your Splitwise password</p>
+				
+				<div style="background-color: #f0f0f0; padding: 20px; text-align: center; border-radius: 6px; margin-bottom: 20px;">
+					<div style="font-size: 48px; font-weight: bold; color: #16a34a; letter-spacing: 10px; font-family: monospace;">` + otp + `</div>
+				</div>
+				
+				<p style="color: #999; text-align: center; font-size: 14px; margin-bottom: 20px;">This OTP is valid for <b>10 minutes</b></p>
+				
+				<hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+				
+				<p style="color: #666; font-size: 12px;">
+					If you didn't request a password reset, please ignore this email. 
+					Do not share this OTP with anyone.
+				</p>
+			</div>
+		</body>
+		</html>
 	`
 
 	body, err := json.Marshal(payload)
@@ -85,4 +104,16 @@ func SendOTPEmailBrevo(toEmail string, otp string) error {
 	}
 
 	return nil
+}
+
+// Generate6DigitOTP generates a random 6-digit OTP
+func Generate6DigitOTP() (string, error) {
+	const digits = 6
+	maxNum := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(digits)), nil)
+	num, err := rand.Int(rand.Reader, maxNum)
+	if err != nil {
+		return "", err
+	}
+	// Pad with zeros if needed
+	return fmt.Sprintf("%06d", num), nil
 }

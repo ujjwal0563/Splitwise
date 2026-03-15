@@ -74,9 +74,9 @@ func (r *UserRepo) CreatePasswordReset(reset *models.PasswordReset) error {
 	return err
 }
 
-func (r *UserRepo) GetPasswordResetByToken(token string) (*models.PasswordReset, error) {
+func (r *UserRepo) GetPasswordResetByOTP(otp string) (*models.PasswordReset, error) {
 	var reset models.PasswordReset
-	err := r.resetCol().FindOne(context.Background(), bson.M{"token": token}).Decode(&reset)
+	err := r.resetCol().FindOne(context.Background(), bson.M{"otp": otp}).Decode(&reset)
 	if err != nil {
 		return nil, err
 	}

@@ -8,10 +8,8 @@ import api from '../api/axios';
 
 const ResetPassword = () => {
     const navigate = useNavigate();
-    const location = useLocation();
-    const tokenFromState = location.state?.token || '';
 
-    const [token, setToken] = useState(tokenFromState);
+    const [otp, setOtp] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -23,6 +21,10 @@ const ResetPassword = () => {
         e.preventDefault();
         setError('');
 
+        if (otp.length !== 6 || isNaN(otp)) {
+            setError('Please enter a valid 6-digit OTP.');
+            return;
+        }
         if (newPassword.length < 6) {
             setError('Password must be at least 6 characters long.');
             return;
@@ -36,12 +38,12 @@ const ResetPassword = () => {
 
         try {
             await api.post('/users/reset-password', {
-                token,
+                token: otp,
                 new_password: newPassword,
             });
             setSuccess(true);
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to reset password. Token may be invalid or expired.');
+            setError(err.response?.data?.error || 'Failed to reset password. OTP may be invalid or expired.');
         } finally {
             setLoading(false);
         }
@@ -73,7 +75,7 @@ const ResetPassword = () => {
                         <p className="text-sm font-medium text-slate-500 mt-2">
                             {success
                                 ? 'Your password has been changed successfully'
-                                : 'Enter your reset token and choose a new password'}
+                                : 'Enter the 6-digit OTP sent to your email and choose a new password'}
                         </p>
                     </CardHeader>
                     <CardContent>
@@ -87,15 +89,17 @@ const ResetPassword = () => {
                                 )}
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-700" htmlFor="token">Reset Token</label>
+                                    <label className="text-sm font-medium text-slate-700" htmlFor="otp">6-Digit OTP</label>
                                     <Input
-                                        id="token"
+                                        id="otp"
                                         type="text"
-                                        placeholder="Paste your reset token here"
+                                        placeholder="Enter 6-digit OTP"
                                         required
-                                        value={token}
-                                        onChange={(e) => setToken(e.target.value)}
+                                        maxLength="6"
+                                        value={otp}
+                                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                                     />
+                                    <p className="text-xs text-slate-500">Check your email for the OTP. It expires in 10 minutes.</p>
                                 </div>
 
                                 <div className="space-y-2">

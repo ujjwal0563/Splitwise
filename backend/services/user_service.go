@@ -1,8 +1,6 @@
 package services
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"time"
 
@@ -82,12 +80,8 @@ func (s *UserService) GetAll() ([]models.User, error) {
 	return users, nil
 }
 
-func generateResetToken() (string, error) {
-	bytes := make([]byte, 32)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(bytes), nil
+func generateOTP() (string, error) {
+	return utils.Generate6DigitOTP()
 }
 
 func (s *UserService) ForgotPassword(req models.ForgotPasswordRequest) error {
@@ -96,24 +90,24 @@ func (s *UserService) ForgotPassword(req models.ForgotPasswordRequest) error {
 		return errors.New("no account found with that email")
 	}
 
-	token, err := generateResetToken()
+	otp, err := generateOTP()
 	if err != nil {
-		return errors.New("failed to generate reset token")
+		return errors.New("failed to generate OTP")
 	}
 
 	reset := &models.PasswordReset{
 		UserID:    user.ID,
-		Token:     token,
-		ExpiresAt: time.Now().Add(1 * time.Hour),
+		OTP:       otp,
+		ExpiresAt: time.Now().Add(10 * time.Minute),
 	}
 
 	if err := s.Repo.CreatePasswordReset(reset); err != nil {
-		return errors.New("failed to create reset token")
+		return errors.New("failed to create password reset request")
 	}
 
-	if err := utils.SendOTPEmailBrevo(user.Email, token); err != nil {
+	if err := utils.SendOTPEmailBrevo(user.Email, otp); err != nil {
 		s.Repo.DeletePasswordReset(reset.ID)
-		return errors.New("failed to send reset token email")
+		return errors.New("failed to send OTP email")
 	}
 
 	return nil
@@ -124,14 +118,14 @@ func (s *UserService) ResetPassword(req models.ResetPasswordRequest) error {
 		return errors.New("password must be at least 6 characters")
 	}
 
-	reset, err := s.Repo.GetPasswordResetByToken(req.Token)
+	reset, err := s.Repo.GetPasswordResetByOTP(req.Token)
 	if err != nil {
-		return errors.New("invalid or expired reset token")
+		return errors.New("invalid or expired OTP")
 	}
 
 	if time.Now().After(reset.ExpiresAt) {
 		s.Repo.DeletePasswordReset(reset.ID)
-		return errors.New("reset token has expired")
+		return errors.New("OTP has expired")
 	}
 
 	hashed, err := utils.HashPassword(req.NewPassword)

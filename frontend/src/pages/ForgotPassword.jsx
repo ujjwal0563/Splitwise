@@ -53,12 +53,12 @@ const ForgotPassword = () => {
                 <Card className="border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.08)] bg-white/70 backdrop-blur-xl">
                     <CardHeader className="text-center pb-2">
                         <CardTitle className="text-3xl font-extrabold tracking-tight">
-                            {success ? 'Token Generated' : 'Forgot Password'}
+                            {success ? 'OTP Sent!' : 'Forgot Password'}
                         </CardTitle>
                         <p className="text-sm font-medium text-slate-500 mt-2">
                             {success
-                                ? 'Check your email for the reset token'
-                                : 'Enter your email and we\'ll send a reset token'}
+                                ? 'Check your email for the OTP'
+                                : 'Enter your email and we\'ll send an OTP'}
                         </p>
                     </CardHeader>
                     <CardContent>
@@ -84,14 +84,14 @@ const ForgotPassword = () => {
                                 </div>
 
                                 <Button type="submit" className="w-full text-base py-5 mt-2" disabled={loading}>
-                                    {loading ? 'Sending...' : 'Send Reset Token'}
+                                    {loading ? 'Sending...' : 'Send OTP'}
                                 </Button>
                             </form>
                         ) : (
                             <div className="space-y-5 mt-4">
                                 <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-sm flex items-start animate-in fade-in">
                                     <CheckCircle2 className="w-4 h-4 mr-2 mt-0.5 shrink-0" />
-                                    <span>Reset token sent successfully! Please check your inbox.</span>
+                                    <span>OTP sent successfully! Please check your inbox.</span>
                                 </div>
 
                                 <Button onClick={handleGoToReset} className="w-full text-base py-5">
