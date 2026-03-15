@@ -90,15 +90,15 @@ func generateResetToken() (string, error) {
 	return hex.EncodeToString(bytes), nil
 }
 
-func (s *UserService) ForgotPassword(req models.ForgotPasswordRequest) (string, error) {
+func (s *UserService) ForgotPassword(req models.ForgotPasswordRequest) error {
 	user, err := s.Repo.GetByEmail(req.Email)
 	if err != nil {
-		return "", errors.New("no account found with that email")
+		return errors.New("no account found with that email")
 	}
 
 	token, err := generateResetToken()
 	if err != nil {
-		return "", errors.New("failed to generate reset token")
+		return errors.New("failed to generate reset token")
 	}
 
 	reset := &models.PasswordReset{
@@ -108,10 +108,15 @@ func (s *UserService) ForgotPassword(req models.ForgotPasswordRequest) (string, 
 	}
 
 	if err := s.Repo.CreatePasswordReset(reset); err != nil {
-		return "", errors.New("failed to create reset token")
+		return errors.New("failed to create reset token")
 	}
 
-	return token, nil
+	if err := utils.SendOTPEmailBrevo(user.Email, token); err != nil {
+		s.Repo.DeletePasswordReset(reset.ID)
+		return errors.New("failed to send reset token email")
+	}
+
+	return nil
 }
 
 func (s *UserService) ResetPassword(req models.ResetPasswordRequest) error {

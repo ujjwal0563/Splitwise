@@ -90,14 +90,12 @@ func (h *UserHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		utils.Error(w, http.StatusBadRequest, "email is required")
 		return
 	}
-	token, err := h.Service.ForgotPassword(req)
-	if err != nil {
+	if err := h.Service.ForgotPassword(req); err != nil {
 		utils.Error(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	utils.Success(w, map[string]string{
-		"message": "password reset token generated",
-		"token":   token,
+		"message": "password reset token sent to your email",
 	})
 }
 

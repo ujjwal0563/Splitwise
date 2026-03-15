@@ -12,7 +12,6 @@ const ForgotPassword = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
-    const [resetToken, setResetToken] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -20,11 +19,8 @@ const ForgotPassword = () => {
         setLoading(true);
 
         try {
-            const response = await api.post('/users/forgot-password', { email });
-            if (response.data && response.data.token) {
-                setResetToken(response.data.token);
-                setSuccess(true);
-            }
+            await api.post('/users/forgot-password', { email });
+            setSuccess(true);
         } catch (err) {
             setError(err.response?.data?.error || 'Failed to process request. Please try again.');
         } finally {
@@ -33,7 +29,7 @@ const ForgotPassword = () => {
     };
 
     const handleGoToReset = () => {
-        navigate('/reset-password', { state: { token: resetToken } });
+        navigate('/reset-password');
     };
 
     return (
@@ -61,8 +57,8 @@ const ForgotPassword = () => {
                         </CardTitle>
                         <p className="text-sm font-medium text-slate-500 mt-2">
                             {success
-                                ? 'Use the token below to reset your password'
-                                : 'Enter your email and we\'ll generate a reset token'}
+                                ? 'Check your email for the reset token'
+                                : 'Enter your email and we\'ll send a reset token'}
                         </p>
                     </CardHeader>
                     <CardContent>
@@ -88,24 +84,14 @@ const ForgotPassword = () => {
                                 </div>
 
                                 <Button type="submit" className="w-full text-base py-5 mt-2" disabled={loading}>
-                                    {loading ? 'Sending...' : 'Get Reset Token'}
+                                    {loading ? 'Sending...' : 'Send Reset Token'}
                                 </Button>
                             </form>
                         ) : (
                             <div className="space-y-5 mt-4">
                                 <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-sm flex items-start animate-in fade-in">
                                     <CheckCircle2 className="w-4 h-4 mr-2 mt-0.5 shrink-0" />
-                                    <span>Reset token generated successfully!</span>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Your Reset Token</label>
-                                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 break-all select-all">
-                                        {resetToken}
-                                    </div>
-                                    <p className="text-[11px] text-slate-400 font-medium">
-                                        Copy this token — you'll need it to reset your password.
-                                    </p>
+                                    <span>Reset token sent successfully! Please check your inbox.</span>
                                 </div>
 
                                 <Button onClick={handleGoToReset} className="w-full text-base py-5">
