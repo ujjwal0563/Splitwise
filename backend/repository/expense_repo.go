@@ -50,3 +50,8 @@ func (r *ExpenseRepo) GetByID(id primitive.ObjectID) (*models.Expense, error) {
 	}
 	return &expense, nil
 }
+
+func (r *ExpenseRepo) UpdateExpense(id primitive.ObjectID, expense *models.Expense) error {
+	_, err := r.col().ReplaceOne(context.Background(), bson.M{"_id": id}, expense)
+	return err
+}
