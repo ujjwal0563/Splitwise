@@ -68,3 +68,30 @@ func (h *ExpenseHandler) DeleteExpense(w http.ResponseWriter, r *http.Request) {
 
 	utils.Success(w, map[string]string{"message": "expense deleted"})
 }
+
+func (h *ExpenseHandler) EditExpense(w http.ResponseWriter, r *http.Request) {
+	expenseID := mux.Vars(r)["id"]
+
+	var req models.UpdateExpenseRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		utils.Error(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if req.Amount <= 0 {
+		utils.Error(w, http.StatusBadRequest, "amount must be greater than 0")
+		return
+	}
+	if req.SplitsType != "equal" && len(req.Splits) == 0 {
+		utils.Error(w, http.StatusBadRequest, "splits required for custom split")
+		return
+	}
+
+	expense, err := h.Service.UpdateExpense(expenseID, req)
+	if err != nil {
+		utils.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.Success(w, expense)
+}
