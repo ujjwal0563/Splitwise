@@ -102,3 +102,72 @@ func (s *ExpenseService) DeleteExpense(expenseID string) error {
 	}
 	return s.Repo.DeleteExpense(objID)
 }
+
+func (s *ExpenseService) UpdateExpense(expenseID string, req models.UpdateExpenseRequest) (*models.Expense, error) {
+	objID, err := primitive.ObjectIDFromHex(expenseID)
+	if err != nil {
+		return nil, errors.New("invalid expense id")
+	}
+
+	// Fetch existing expense
+	expense, err := s.Repo.GetByID(objID)
+	if err != nil {
+		return nil, errors.New("expense not found")
+	}
+
+	// Fetch group for member validation
+	group, err := s.GroupRepo.GetByID(expense.GroupID)
+	if err != nil {
+		return nil, errors.New("group not found")
+	}
+
+	// Create member set for validation
+	memberSet := make(map[primitive.ObjectID]bool)
+	for _, m := range group.Members {
+		memberSet[m] = true
+	}
+
+	var splits []models.ExpenseSplit
+
+	if req.SplitsType == "equal" {
+		share := req.Amount / float64(len(group.Members))
+		for _, memberID := range group.Members {
+			splits = append(splits, models.ExpenseSplit{
+				UserID: memberID,
+				Amount: share,
+			})
+		}
+	} else {
+		var splitTotal float64
+		for _, sp := range req.Splits {
+			uid, err := primitive.ObjectIDFromHex(sp.UserID)
+			if err != nil {
+				return nil, errors.New("invalid split user id")
+			}
+			if !memberSet[uid] {
+				return nil, errors.New("split user must be a member of the group")
+			}
+			splits = append(splits, models.ExpenseSplit{
+				UserID: uid,
+				Amount: sp.Amount,
+			})
+			splitTotal += sp.Amount
+		}
+		// Validate splits sum to expense amount (allow 0.01 tolerance for rounding)
+		if math.Abs(splitTotal-req.Amount) > 0.01 {
+			return nil, errors.New("splits must add up to the expense amount")
+		}
+	}
+
+	// Update expense fields
+	expense.Amount = req.Amount
+	expense.Description = req.Description
+	expense.Splits = splits
+
+	// Save updated expense
+	if err := s.Repo.UpdateExpense(objID, expense); err != nil {
+		return nil, err
+	}
+
+	return expense, nil
+}
