@@ -90,6 +90,7 @@ func SetupRouter() http.Handler {
 	// Expense Routes
 	protected.HandleFunc("/groups/{id}/expenses", expenseHandler.AddExpense).Methods("POST")
 	protected.HandleFunc("/groups/{id}/expenses", expenseHandler.GetExpenses).Methods("GET")
+	protected.HandleFunc("/expenses/{id}", expenseHandler.EditExpense).Methods("PUT")
 	protected.HandleFunc("/expenses/{id}", expenseHandler.DeleteExpense).Methods("DELETE")
 
 	// Balance Routes
